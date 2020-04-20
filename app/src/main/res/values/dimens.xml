@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="zero_dp">0dp</dimen>
+    <dimen name="title_text_size">25sp</dimen>
+    <dimen name="description_margin_end">40sp</dimen>
+    <dimen name="descriptionTextSize">15sp</dimen>
+    <dimen name="ten_dp_margin">10dp</dimen>
+    <dimen name="image_width">120dp</dimen>
+    <dimen name="image_height">80dp</dimen>
+    <dimen name="icon_image_width">30dp</dimen>
+    <dimen name="icon_image_height">30dp</dimen>
+    <dimen name="card_margin">12dp</dimen>
+    <dimen name="padding_10">10dp</dimen>
+</resources>

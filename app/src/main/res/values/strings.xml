@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">VinodAssigment</string>
+    <string name="no_news_feed_yet">No News Feed yet</string>
+    <string name="no_internet_connection">No Internet Connection</string>
+    <string name="you_are_offline">You are offline</string>
+    <string name="news_image_description">"News Image "</string>
+    <string name="right_arrow_image">Right Arrow Image</string>
+</resources>
