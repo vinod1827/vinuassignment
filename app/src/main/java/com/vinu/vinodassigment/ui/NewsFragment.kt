@@ -51,6 +51,11 @@ class NewsFragment : Fragment() {
         }
     }
 
+
+    /*
+   * Name : observeNewsData()
+   *  Description : Observing live news data
+   */
     private fun observeNewsData() {
         newsViewModel.responseModel.observe(viewLifecycleOwner, Observer {
             populateData(it)
@@ -58,6 +63,10 @@ class NewsFragment : Fragment() {
 
     }
 
+    /*
+    * Name : initializeSwipeRefreshLayout()
+    *  Description : intialized the swipe refresh layout and its listener
+    */
     private fun initializeSwipeRefreshLayout() {
         swipeRefreshLayout.setOnRefreshListener {
             if (swipeRefreshLayout.isRefreshing) {
@@ -66,20 +75,35 @@ class NewsFragment : Fragment() {
         }
     }
 
+    /*
+    * Name : initializeNewsRecyclerView()
+    *  Description : intialized the adapter and recyclerview
+    */
     private fun initializeNewsRecyclerView() {
         newsRecyclerView.adapter = NewsRecyclerViewAdapter(list)
         newsRecyclerView.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
     }
+
 
     private fun enableNewsFeedView(isEnabled: Boolean) {
         newsRecyclerView.visibility = if (isEnabled) View.VISIBLE else View.GONE
         listEmptyTextView.visibility = if (!isEnabled) View.VISIBLE else View.GONE
     }
 
+    /*
+     * Name : fetchNewsFeeds()
+     *  Description : Fetching data from API call and Database
+     */
     private fun fetchNewsFeeds() {
         swipeRefreshLayout.isRefreshing = true
         newsViewModel.getNewsFeed()
     }
+
+
+    /*
+     * Name : populateData()
+     *  Description : Populating the recyclerview with some handling for display on screen
+     */
 
     private fun populateData(it: ResponseModel?) {
         activity?.title = it?.title
@@ -89,8 +113,8 @@ class NewsFragment : Fragment() {
             newsRecyclerView.adapter?.notifyDataSetChanged()
             enableNewsFeedView(true)
         }
-        if (!it?.exceptionMsg.isNullOrBlank()) {
-            Toast.makeText(context, it?.exceptionMsg, Toast.LENGTH_LONG).show()
+        if (!it?.errorMessage.isNullOrBlank()) {
+            Toast.makeText(context, it?.errorMessage, Toast.LENGTH_LONG).show()
         }
         if (list.isEmpty()) {
             enableNewsFeedView(false)

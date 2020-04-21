@@ -12,16 +12,20 @@ class NewsRepository(
     private val newsDao: NewsDao
 ) {
 
-    var liveData = MutableLiveData<ResponseModel>()
+    var responseModelData = MutableLiveData<ResponseModel>()
 
+    /*
+     * Name : getNewsFeed()
+     *  Description : 1.  This method fetches data from the local db first and updates the UI,
+     *                2. Then it fetches the data from server and inserts the data into local db
+     *                3. The Local Database takes care of updating the UI thats been observed in view model
+     */
     fun getNewsFeed() {
         CoroutineScope(IO).launch {
-            //Get data from db first then go for API call
             var responseData = newsDao.getAllNews()
             if (responseData != null) {
                 responseData.isDataFromDb = true
-                liveData.postValue(responseData)
-                delay(500)
+                responseModelData.postValue(responseData)
             } else {
                 responseData = ResponseModel()
             }
@@ -36,17 +40,12 @@ class NewsRepository(
                     newsDao.insertNewsData(it)
                 }
                 responseModel.isDataFromDb = false
-                liveData.postValue(responseModel)
-            } catch (e: HttpException) {
-                responseData.exceptionMsg = "No Internet Connection"
+                responseModelData.postValue(responseModel)
+            }  catch (e: Exception) {
+                responseData.errorMessage = "Error occurred. Please contact support"
                 responseData.isDataFromDb = false
                 e.printStackTrace()
-                liveData.postValue(ResponseModel(exceptionMsg = "No Internet Connection", isDataFromDb = false))
-            } catch (e: Exception) {
-                responseData.exceptionMsg = "Error occurred. Please contact support"
-                responseData.isDataFromDb = false
-                e.printStackTrace()
-                liveData.postValue(
+                responseModelData.postValue(
                     responseData
                 )
             }

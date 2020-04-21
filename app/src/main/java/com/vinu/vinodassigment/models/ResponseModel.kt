@@ -11,6 +11,6 @@ import kotlinx.android.parcel.Parcelize
 data class ResponseModel(
     @PrimaryKey @ColumnInfo(name = "title") var title: String = "",
     var rows: List<NewsModel>? = ArrayList(),
-    var exceptionMsg: String = "",
+    var errorMessage: String = "",
     var isDataFromDb: Boolean = false
 ) : Parcelable
