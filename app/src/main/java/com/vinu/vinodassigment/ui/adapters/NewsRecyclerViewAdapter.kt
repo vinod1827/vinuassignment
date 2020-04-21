@@ -39,39 +39,45 @@ class NewsRecyclerViewAdapter(
         val item = newsList[position]
         holder.itemView.titleTextView.text = item.title
         holder.itemView.descriptionTextView.text = item.description
-        if (!item.imageHref.isNullOrEmpty()) {
-            loadImage(holder, item)
-        }
+        loadImage(holder, item)
     }
 
     private fun loadImage(holder: NewsViewHolder, item: NewsModel) {
-        Glide.with(holder.itemView.context)
-            .load(item.imageHref)
-            .placeholder(R.drawable.ic_placeholder)
-            .addListener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    holder.itemView.newsImageView.visibility = View.GONE
-                    return false
-                }
 
-                override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    holder.itemView.newsImageView.visibility = View.VISIBLE
-                    return false
-                }
+        if (newsList.size > 0 && item.imageHref != null) {
 
-            })
-            .into(holder.itemView.newsImageView)
+            Glide.with(holder.itemView.context)
+                .load(item.imageHref)
+                .placeholder(R.drawable.ic_placeholder)
+                .addListener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        holder.itemView.newsImageView.visibility = View.GONE
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        holder.itemView.newsImageView.visibility = View.VISIBLE
+                        return false
+                    }
+
+                })
+                .into(holder.itemView.newsImageView)
+        } else {
+            Glide.with(holder.itemView.context).clear(holder.itemView.newsImageView)
+            holder.itemView.newsImageView.visibility = View.GONE
+        }
+
     }
 
     class NewsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
