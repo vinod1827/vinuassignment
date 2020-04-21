@@ -104,7 +104,6 @@ class NewsFragment : Fragment() {
      * Name : populateData()
      *  Description : Populating the recyclerview with some handling for display on screen
      */
-
     private fun populateData(it: ResponseModel?) {
         activity?.title = it?.title
         if (it?.rows?.size ?: 0 > 0) {
