@@ -1,6 +1,5 @@
 package com.vinu.vinodassigment.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -14,5 +13,5 @@ interface NewsDao {
     fun insertNewsData(responseModel: ResponseModel)
 
     @Query("SELECT * FROM news_data")
-    fun getAllNews(): LiveData<ResponseModel>
+    fun getAllNews(): ResponseModel?
 }

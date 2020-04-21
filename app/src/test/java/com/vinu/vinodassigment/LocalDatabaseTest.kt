@@ -41,12 +41,12 @@ class LocalDatabaseTest {
         CoroutineScope(Dispatchers.IO).launch {
             val responseModel = RetrofitBuilder.apiService.getNewsResponse()
             val rows = responseModel.rows?.filter {
-                it.title != null && it.description != null
+                it.description != null
             }
             responseModel.rows = rows
             responseModel.let {
                 newsDao.insertNewsData(it)
-                assert(newsDao.getAllNews().value?.rows?.size ?: 0 > 0)
+                assert(newsDao.getAllNews()?.rows?.size ?: 0 > 0)
             }
         }
     }

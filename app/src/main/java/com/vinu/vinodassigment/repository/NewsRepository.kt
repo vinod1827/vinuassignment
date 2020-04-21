@@ -1,23 +1,55 @@
 package com.vinu.vinodassigment.repository
 
-import com.vinu.vinodassigment.api.RetrofitBuilder
-import com.vinu.vinodassigment.dao.NewsDao
+import androidx.lifecycle.MutableLiveData
+import com.vinu.vinodassigment.api.ApiService
+import com.vinu.vinodassigment.database.NewsRoomDatabase
+import com.vinu.vinodassigment.models.ResponseModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
+import retrofit2.HttpException
 
-class NewsRepository(private val newsDao: NewsDao) {
+class NewsRepository(
+    private val apiService: ApiService,
+    private val newsDatabase: NewsRoomDatabase
+) {
 
-    val responseData = newsDao.getAllNews()
+    var liveData = MutableLiveData<ResponseModel>()
 
     fun getNewsFeed() {
         CoroutineScope(IO).launch {
-            val responseModel = RetrofitBuilder.apiService.getNewsResponse()
-            val rows = responseModel.rows?.filter {
-                it.title != null && it.description != null
+            //Get data from db first then go for API call
+            var responseData = newsDatabase.newsDao().getAllNews()
+            if (responseData != null) {
+                responseData.isDataFromDb = true
+                liveData.postValue(responseData)
+                delay(500)
+            } else {
+                responseData = ResponseModel()
             }
-            responseModel.rows = rows
-            responseModel.let {
-                newsDao.insertNewsData(it)
+
+            try {
+                val responseModel = apiService.getNewsResponse()
+                val rows = responseModel.rows?.filter {
+                    it.description != null
+                }
+                responseModel.rows = rows
+                responseModel.let {
+                    newsDatabase.newsDao().insertNewsData(it)
+                }
+                responseModel.isDataFromDb = false
+                liveData.postValue(responseModel)
+            } catch (e: HttpException) {
+                responseData.exceptionMsg = "No Internet Connection"
+                responseData.isDataFromDb = false
+                e.printStackTrace()
+                liveData.postValue(ResponseModel(exceptionMsg = "No Internet Connection", isDataFromDb = false))
+            } catch (e: Exception) {
+                responseData.exceptionMsg = "Error occurred. Please contact support"
+                responseData.isDataFromDb = false
+                e.printStackTrace()
+                liveData.postValue(
+                    responseData
+                )
             }
         }
     }

@@ -7,24 +7,23 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vinu.vinodassigment.ui.adapters.NewsRecyclerViewAdapter
 import com.vinu.vinodassigment.R
+import com.vinu.vinodassigment.api.RetrofitBuilder
+import com.vinu.vinodassigment.database.NewsRoomDatabase
 import com.vinu.vinodassigment.models.NewsModel
 import com.vinu.vinodassigment.models.ResponseModel
-import com.vinu.vinodassigment.utils.Constants.RESPONSE_DATA_KEY
-import com.vinu.vinodassigment.utils.isNetworkAvailable
+import com.vinu.vinodassigment.repository.NewsRepository
 import kotlinx.android.synthetic.main.fragment_home.*
-
 
 class NewsFragment : Fragment() {
 
-    private var newsFragmentViewModel: NewsFragmentViewModel? = null
+    private lateinit var newsFragmentViewModel: NewsFragmentViewModel
     private val list = ArrayList<NewsModel>()
-    private var responseModel: ResponseModel? = null
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,16 +33,19 @@ class NewsFragment : Fragment() {
 
         val rootView = inflater.inflate(R.layout.fragment_home, container, false)
 
-        activity?.application?.let {
-            newsFragmentViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(it)
-                .create(NewsFragmentViewModel::class.java)
-        }
+        val database = NewsRoomDatabase.getDatabase(requireContext().applicationContext)
 
-        if (savedInstanceState != null) {
-            responseModel = savedInstanceState.getParcelable(RESPONSE_DATA_KEY)
+        val repository = NewsRepository(RetrofitBuilder.apiService, database)
+
+        val factory = ListViewModelFactory(repository)
+
+        activity?.application?.let {
+            newsFragmentViewModel =
+                ViewModelProvider(this, factory).get(NewsFragmentViewModel::class.java)
         }
         return rootView
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
@@ -53,17 +55,18 @@ class NewsFragment : Fragment() {
 
         initializeNewsRecyclerView()
 
-        newsFragmentViewModel?.responseModel?.observe(viewLifecycleOwner, Observer {
-            responseModel = it
-            swipeRefreshLayout.isRefreshing = false
+        observeNewsData()
+
+        if (savedInstanceState == null) {
+            fetchNewsFeeds()
+        }
+    }
+
+    private fun observeNewsData() {
+        newsFragmentViewModel.responseModel.observe(viewLifecycleOwner, Observer {
             populateData(it)
         })
 
-        if (responseModel == null) {
-            fetchNewsFeeds()
-        } else {
-            populateData(responseModel)
-        }
     }
 
     private fun initializeSwipeRefreshLayout() {
@@ -85,33 +88,36 @@ class NewsFragment : Fragment() {
     }
 
     private fun fetchNewsFeeds() {
-        if (isNetworkAvailable(activity)) {
-            swipeRefreshLayout.isRefreshing = true
-            newsFragmentViewModel?.getNewsFeed()
-        } else {
-            swipeRefreshLayout.isRefreshing = false
-            Toast.makeText(
-                activity,
-                getString(R.string.you_are_offline),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        swipeRefreshLayout.isRefreshing = true
+        newsFragmentViewModel.getNewsFeed()
     }
 
     private fun populateData(it: ResponseModel?) {
-        list.clear()
         activity?.title = it?.title
         if (it?.rows?.size ?: 0 > 0) {
+            list.clear()
             list.addAll(it?.rows!!)
             newsRecyclerView.adapter?.notifyDataSetChanged()
             enableNewsFeedView(true)
-        } else {
+        }
+        if (!it?.exceptionMsg.isNullOrBlank()) {
+            Toast.makeText(context, it?.exceptionMsg, Toast.LENGTH_LONG).show()
+        }
+        if (list.isEmpty()) {
             enableNewsFeedView(false)
+        }
+        if (it?.isDataFromDb == false) {
+            swipeRefreshLayout.isRefreshing = false
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putParcelable(RESPONSE_DATA_KEY, responseModel)
+    @Suppress("UNCHECKED_CAST")
+    class ListViewModelFactory(var repository: NewsRepository) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(NewsFragmentViewModel::class.java)) {
+                return NewsFragmentViewModel(repository) as T
+            }
+            throw IllegalArgumentException("ViewModel class problem")
+        }
     }
 }
