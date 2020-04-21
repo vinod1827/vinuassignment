@@ -1,16 +1,15 @@
 package com.vinu.vinodassigment.repository
 
 import androidx.lifecycle.MutableLiveData
-import com.vinu.vinodassigment.api.ApiService
-import com.vinu.vinodassigment.database.NewsRoomDatabase
+import com.vinu.vinodassigment.api.RetrofitBuilder
+import com.vinu.vinodassigment.dao.NewsDao
 import com.vinu.vinodassigment.models.ResponseModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import retrofit2.HttpException
 
 class NewsRepository(
-    private val apiService: ApiService,
-    private val newsDatabase: NewsRoomDatabase
+    private val newsDao: NewsDao
 ) {
 
     var liveData = MutableLiveData<ResponseModel>()
@@ -18,7 +17,7 @@ class NewsRepository(
     fun getNewsFeed() {
         CoroutineScope(IO).launch {
             //Get data from db first then go for API call
-            var responseData = newsDatabase.newsDao().getAllNews()
+            var responseData = newsDao.getAllNews()
             if (responseData != null) {
                 responseData.isDataFromDb = true
                 liveData.postValue(responseData)
@@ -28,13 +27,13 @@ class NewsRepository(
             }
 
             try {
-                val responseModel = apiService.getNewsResponse()
+                val responseModel = RetrofitBuilder.apiService.getNewsResponse()
                 val rows = responseModel.rows?.filter {
                     it.description != null
                 }
                 responseModel.rows = rows
                 responseModel.let {
-                    newsDatabase.newsDao().insertNewsData(it)
+                    newsDao.insertNewsData(it)
                 }
                 responseModel.isDataFromDb = false
                 liveData.postValue(responseModel)

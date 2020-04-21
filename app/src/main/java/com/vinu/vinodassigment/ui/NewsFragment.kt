@@ -7,22 +7,19 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vinu.vinodassigment.ui.adapters.NewsRecyclerViewAdapter
 import com.vinu.vinodassigment.R
-import com.vinu.vinodassigment.api.RetrofitBuilder
-import com.vinu.vinodassigment.database.NewsRoomDatabase
 import com.vinu.vinodassigment.models.NewsModel
 import com.vinu.vinodassigment.models.ResponseModel
-import com.vinu.vinodassigment.repository.NewsRepository
+import com.vinu.vinodassigment.viewmodels.NewsViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
 
 class NewsFragment : Fragment() {
 
-    private lateinit var newsFragmentViewModel: NewsFragmentViewModel
+    private lateinit var newsViewModel: NewsViewModel
     private val list = ArrayList<NewsModel>()
 
     override fun onCreateView(
@@ -30,18 +27,10 @@ class NewsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         val rootView = inflater.inflate(R.layout.fragment_home, container, false)
-
-        val database = NewsRoomDatabase.getDatabase(requireContext().applicationContext)
-
-        val repository = NewsRepository(RetrofitBuilder.apiService, database)
-
-        val factory = ListViewModelFactory(repository)
-
         activity?.application?.let {
-            newsFragmentViewModel =
-                ViewModelProvider(this, factory).get(NewsFragmentViewModel::class.java)
+            newsViewModel =
+                ViewModelProvider(this).get(NewsViewModel::class.java)
         }
         return rootView
     }
@@ -63,7 +52,7 @@ class NewsFragment : Fragment() {
     }
 
     private fun observeNewsData() {
-        newsFragmentViewModel.responseModel.observe(viewLifecycleOwner, Observer {
+        newsViewModel.responseModel.observe(viewLifecycleOwner, Observer {
             populateData(it)
         })
 
@@ -89,7 +78,7 @@ class NewsFragment : Fragment() {
 
     private fun fetchNewsFeeds() {
         swipeRefreshLayout.isRefreshing = true
-        newsFragmentViewModel.getNewsFeed()
+        newsViewModel.getNewsFeed()
     }
 
     private fun populateData(it: ResponseModel?) {
@@ -108,16 +97,6 @@ class NewsFragment : Fragment() {
         }
         if (it?.isDataFromDb == false) {
             swipeRefreshLayout.isRefreshing = false
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    class ListViewModelFactory(var repository: NewsRepository) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(NewsFragmentViewModel::class.java)) {
-                return NewsFragmentViewModel(repository) as T
-            }
-            throw IllegalArgumentException("ViewModel class problem")
         }
     }
 }

@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.vinu.vinodassigment.models.ResponseModel
 import com.vinu.vinodassigment.ui.NewsFragment
-import com.vinu.vinodassigment.ui.NewsFragmentViewModel
+import com.vinu.vinodassigment.viewmodels.NewsViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,7 +22,7 @@ class FragmentsTest {
             it.activity?.application?.let { app ->
                 val newsFragmentViewModel =
                     ViewModelProvider.AndroidViewModelFactory.getInstance(app)
-                        .create(NewsFragmentViewModel::class.java)
+                        .create(NewsViewModel::class.java)
                 newsFragmentViewModel.responseModel.observe(
                     it.viewLifecycleOwner,
                     Observer { responseModel ->

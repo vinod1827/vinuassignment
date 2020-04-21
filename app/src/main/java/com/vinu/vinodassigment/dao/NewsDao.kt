@@ -8,7 +8,6 @@ import com.vinu.vinodassigment.models.ResponseModel
 
 @Dao
 interface NewsDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertNewsData(responseModel: ResponseModel)
 
