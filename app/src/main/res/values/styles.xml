@@ -36,4 +36,21 @@
         <item name="android:textSize">@dimen/descriptionTextSize</item>
     </style>
 
+
+    <style name="RightArrowImageIcon">
+        <item name="android:layout_width">@dimen/icon_image_width</item>
+        <item name="android:layout_height">@dimen/icon_image_height</item>
+        <item name="android:src">@drawable/ic_right</item>
+        <item name="contentDescription">@string/right_arrow_image</item>
+    </style>
+
+    <style name="NewsImageView">
+        <item name="android:layout_width">@dimen/image_width</item>
+        <item name="android:layout_height">@dimen/image_height</item>
+        <item name="android:layout_marginTop">@dimen/ten_dp_margin</item>
+        <item name="android:src">@drawable/ic_right</item>
+        <item name="android:scaleType">fitXY</item>
+        <item name="contentDescription">@string/news_image_description</item>
+    </style>
+
 </resources>
